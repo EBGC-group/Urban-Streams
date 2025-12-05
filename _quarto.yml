@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  title: "project-template"
+  title: "Urban Streams"
   navbar:
     left:
       - text: "Home"
@@ -14,7 +14,7 @@ website:
         file: page-2.qmd
     right:
       - icon: github
-        href: https://github.com/EBGC-group/
+        href: https://github.com/EBGC-group/Urban-Streams
 
 format:
   html:

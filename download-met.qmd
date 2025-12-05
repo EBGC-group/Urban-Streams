@@ -1,0 +1,102 @@
+---
+title: "Downloading Meteorological Data"
+format: html
+---
+
+During the process of analyzing certain logger data streams we will need meteorological data such as barometeric pressure, rainfall, air temperature, etc. This is particularly useful to converting pressure transducer readings to stream depth or for calculating the saturation point of dissolved gases such as oxygen.
+
+Generally this is acquired one of two ways:
+
+1)  Through co-located in-stream and out-of-stream pressure transducers
+
+2)  Through measured barometric pressure from a nearby weather station
+
+The general rule-of-thumb is that the barometric measurements should be measured within 10 miles of the stream logger.
+
+Hickory Creek near the UNT Water Research Field Station is located near to the Denton Municipal Airport which has an associated weather station. This page outlines the process to access and download meteorological data from the Denton Municipal Airport using the [`worldmet` package](https://openair-project.github.io/worldmet/index.html).
+
+First make sure the `worldmet` package is installed from github. To do so we will also need to have devtools installed:
+
+```{r install-package, echo=TRUE, eval=FALSE}
+if(!require(devtools)){
+  install.packages('devtools')
+}
+devtools::install_github('openair-project/worldmet')
+
+```
+
+```{r load-packages, echo=FALSE, warning=FALSE}
+library(here)
+here::i_am('download-met.qmd')
+library(magrittr)
+library(dplyr)
+library(tidyr)
+library(worldmet)
+```
+
+Make sure to load the package with `r library(worldmet)`.
+
+The Denton airport is ID: USW00003991
+
+To get the hourly meteorological data, we can use the `import_ghcn_hourly()` function. The function downloads the entire year data for the station.
+
+```{r import-downloaded-met, echo=FALSE, eval=TRUE}
+# we will download the current file so we don't have to pull from API every time
+met_DMA = read.table(here::here("data/met_DMA.txt"), header = TRUE,  sep = '\t')
+```
+
+```{r station-metadata, echo=TRUE,eval=FALSE}
+met_DMA = import_ghcn_hourly(station = "USW00003991",
+                             year = 2025,
+                             extra = TRUE)
+
+# station: string, station_id
+# year: numeric, year to download data
+# extra: logical, should extra columns be included?
+```
+
+```{r view-met-data, echo=FALSE, eval=TRUE}
+dplyr::glimpse(met_DMA)
+```
+
+This has a lot of information, most of which is unnecessary for our needs. We can subset this data to:
+
+1)  only include the relevant date range, and
+
+2)  only include the relevant columns
+
+To only download the current year (the function operates on data years currently), we just create a year variable to pass to the function with 'current_year = format(Sys.Date(), "%Y%")' = `r current_year = format(Sys.Date(), "%Y%")`. Then we subset the data columns to only include relevant information:
+
+-   'station_id': The station ID of the met station
+
+-   'station_name': The name of the met station
+
+-   'date': The date-time of the readings
+
+-   'air_temp': air temperature reading at the station in ^o^C
+
+-   'atmos_pres': barometric pressure in units of hPa
+
+-   'sea_press': Estimated pressure at sea level directly below the station using actual atomosphere profile (hPa)
+
+-   'altimeter': Pressure reduced to mean sea level using standard atmosphere profile (hPa)
+
+-   'precip': Total liquire precipitation (rain or melted snow) for the hour in mm
+
+```{r subset-met-columns, echo = TRUE}
+met_DMA = met_DMA %>% 
+  dplyr::select(station_id, station_name, date, air_temp, atmos_pres, sea_pres, altimeter, precip)
+
+```
+
+We then save this as a text file in the '/data' folder.
+
+```{r save-met, echo=TRUE, eval=FALSE}
+write.table(met_DMA, file = here::here("data/met_DMA.txt"), row.names = FALSE, quote = FALSE, sep = '\t')
+```
+
+After this original file is written the file is updated automatically every month through a github action: `get-merge-met-data.yml`. This action calls the script, `get-merge-met-data.R` to dowload new data and merge it into the met_DMA.txt file.
+
+Therefore, this process does not have to be repeated for the Denton Municipal Airport unless we need to change the variables. If other stations are desired, repeat this initiation process for new stations and update `get-merge-met-data.R` to include new station data.
+
+The last time the 

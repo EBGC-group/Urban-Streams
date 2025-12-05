@@ -1,0 +1,73 @@
+name: Get and Merge met data
+
+on:
+  schedule:
+    - cron: "* * 1 * *"
+    
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+jobs:
+  get-merge-met-data:
+    runs-on: ${{matrix.config.os}}
+    
+    name: ${{matrix.config.os}} (${{matrix.config.r}})
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: ubuntu-latest, r: 'release'}
+    env:
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      RSPM: ${{matrix.config.rspm}}
+      GITHUB_PAT: ${{secrets.GITHUB_TOKEN}}
+      steps: 
+      - name: Checkout
+        uses: actions/checkout@v6
+        
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+      
+      - name: Install packages
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 2
+          package: |
+          
+          
+      - name: Install R packages from CRAN
+          run: |
+            Rscript -e 'install.packages("remotes", repos = "https://cran.rstudio.com")'
+            Rscript -e 'install.packages("magrittr", repos = "https://cran.rstudio.com")'
+            Rscript -e 'install.packages("dplyr", repos = "https://cran.rstudio.com")'
+            Rscript -e 'install.packages("tidyr", repos = "https://cran.rstudio.com")'
+            
+            
+      - name: Install R package from GitHub
+          run: |
+            Rscript -e 'remotes::install_github("openair-project/worldmet")'
+      
+      - name: Download and Merge data
+        run: |
+          source("code/get-merge-met-data.R")
+        shell: Rscript {0}
+      - name: Commit files
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "Github Actions"
+          git add -A
+          git commit -am "add updated met data"
+          git push
+  
+    
