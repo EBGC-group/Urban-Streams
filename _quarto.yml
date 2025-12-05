@@ -8,8 +8,8 @@ website:
     left:
       - text: "Home"
         file: index.qmd
-      - text: "Page 1"
-        file: page-1.qmd
+      - text: "Download Met Data"
+        file: download-met.qmd
       - text: "Page 2"
         file: page-2.qmd
     right:
