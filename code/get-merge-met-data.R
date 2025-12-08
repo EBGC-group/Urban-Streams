@@ -33,7 +33,7 @@ write.table(updated_met_DMA,
             row.names = FALSE,
             quote = FALSE,
             sep = '\t',
-            overwrite = TRUE)
+            append = FALSE)
 
 # create a timestamp of last successful run
 
