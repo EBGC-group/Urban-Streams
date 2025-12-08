@@ -28,13 +28,13 @@ jobs:
         
       - name: Install packages
         uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          packages: |
-            any::here
-            any::remotes
-            any::magrittr
-            any::dplyr
-            any::tidyr
+        # with:
+        #   extra-packages: |
+        #     any::here
+        #     any::remotes
+        #     any::magrittr
+        #     any::dplyr
+        #     any::tidyr
       #       
       # - name: Install R package from GitHub
       #     run: |
