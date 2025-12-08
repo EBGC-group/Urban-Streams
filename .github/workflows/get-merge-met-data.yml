@@ -29,6 +29,12 @@ jobs:
       - name: Install packages
         uses: r-lib/actions/setup-r-dependencies@v2
         # with:
+        #   packages: |
+        #     here,
+        #     remotes,
+        #     magrittr,
+        #     dplyr,
+        #     tidyr
         #   extra-packages: |
         #     any::here
         #     any::remotes
