@@ -34,7 +34,8 @@ jobs:
             remotes,
             magrittr,
             dplyr,
-            tidyr
+            tidyr,
+            readr
             
           extra-packages: |
             github::openair-project/worldmet
