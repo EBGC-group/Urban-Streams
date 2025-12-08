@@ -30,12 +30,12 @@ jobs:
         
       - name: Install packages
         uses: r-lib/actions/setup-r-dependencies@v2
-      #   with:
-      #     packages: |
-      #       any::remotes
-      #       any::magrittr
-      #       any: dplyr
-      #       any::tidyr
+        with:
+          packages: |
+            any::remotes
+            any::magrittr
+            any: dplyr
+            any::tidyr
       #       
       # - name: Install R package from GitHub
       #     run: |
@@ -50,10 +50,9 @@ jobs:
       #     shell: Rscript {0}
 
       - name: Download and Merge data
-        run: Rscript
-          source("code/get-merge-met-data.R")
-        shell: Rscript {0}
-      
+        run: |
+          Rscript -e 'source("get-merge-met-data.R")'
+
       - name: Commit files
         run: |
           git config --local user.email "actions@github.com"
