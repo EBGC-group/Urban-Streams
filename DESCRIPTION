@@ -4,4 +4,4 @@ Imports:
   magrittr,
   dplyr,
   tidyr
-Remotes: openair-project/worldmet
+Remotes: github::openair-project/worldmet
