@@ -18,9 +18,7 @@ jobs:
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       GITHUB_PAT: ${{secrets.GITHUB_TOKEN}}
-    defaults:
-      run:
-        working-directory: ./code
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -52,7 +50,7 @@ jobs:
 
       - name: Download and Merge data
         run: |
-          Rscript -e 'source("get-merge-met-data.R")'
+          Rscript -e 'source("./code/get-merge-met-data.R")'
 
       - name: Commit files
         run: |
