@@ -2,14 +2,13 @@ name: Get and Merge met data
 
 on:
   schedule:
-    - cron: "* * 1 * *"
+    - cron: "0 12 1 * *"
     
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Sets permissions of the GITHUB_TOKEN to allow writing new files
 permissions:
-  contents: read
-  pages: write
+  contents: write
   id-token: write
   
 jobs:
@@ -29,16 +28,17 @@ jobs:
       - name: Install packages
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          packages: |
-            here,
-            remotes,
-            magrittr,
-            dplyr,
-            tidyr,
-            readr
-            
-          extra-packages: |
-            github::openair-project/worldmet
+          cache: 'always'
+          # packages: |
+          #   here,
+          #   remotes,
+          #   magrittr,
+          #   dplyr,
+          #   tidyr,
+          #   readr
+          #   
+          # extra-packages: |
+          #   github::openair-project/worldmet
         #   extra-packages: |
         #     any::here
         #     any::remotes

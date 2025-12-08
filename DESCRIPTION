@@ -1,0 +1,13 @@
+Type: Project
+Title: Urban Streams
+Version: 1.0.0
+Date: 2025-12-01
+Description: EBGC lab group of UNT detailing the study of Urban Streams
+License: MIT
+Imports:
+  here,
+  magrittr,
+  dplyr,
+  tidyr,
+  readr
+Remotes: github::openair-project/worldmet
