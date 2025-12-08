@@ -28,13 +28,15 @@ jobs:
         
       - name: Install packages
         uses: r-lib/actions/setup-r-dependencies@v2
-        # with:
-        #   packages: |
-        #     here,
-        #     remotes,
-        #     magrittr,
-        #     dplyr,
-        #     tidyr
+        with:
+          packages: |
+            here,
+            remotes,
+            magrittr,
+            dplyr,
+            tidyr
+          extra-packages:
+            github::openair-project/worldmet
         #   extra-packages: |
         #     any::here
         #     any::remotes

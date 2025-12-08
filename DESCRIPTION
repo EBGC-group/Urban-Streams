@@ -1,6 +1,0 @@
-Depends:
-  here,
-  magrittr,
-  dplyr,
-  tidyr
-Remotes: github::openair-project/worldmet
