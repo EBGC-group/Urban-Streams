@@ -28,7 +28,7 @@ jobs:
       - name: Install packages
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          cache: 'always'
+          cache-version: 2
           packages: |
             any::here,
             any::remotes,
