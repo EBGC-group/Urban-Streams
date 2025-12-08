@@ -1,8 +1,8 @@
 Depends:
   R (>= 4.3.0)
 Imports:
-  here
-  magrittr
-  dplyr
+  here,
+  magrittr,
+  dplyr,
   tidyr
 Remotes: openair-project/worldmet

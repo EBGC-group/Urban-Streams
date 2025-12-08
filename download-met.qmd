@@ -95,8 +95,9 @@ We then save this as a text file in the '/data' folder.
 write.table(met_DMA, file = here::here("data/met_DMA.txt"), row.names = FALSE, quote = FALSE, sep = '\t')
 ```
 
-After this original file is written the file is updated automatically every month through a github action: `get-merge-met-data.yml`. This action calls the script, `get-merge-met-data.R` to dowload new data and merge it into the met_DMA.txt file.
+After this original file is written the file is updated automatically every month through a github action: `get-merge-met-data.yml`. This action calls the script, `get-merge-met-data.R` to download new data and merge it into the met_DMA.txt file.
 
 Therefore, this process does not have to be repeated for the Denton Municipal Airport unless we need to change the variables. If other stations are desired, repeat this initiation process for new stations and update `get-merge-met-data.R` to include new station data.
 
-The last time the thvdyfi
+The last time the data was downloaded was `r readRDS(here::here("data/met_DMA_timestamp.rds")`.
+
