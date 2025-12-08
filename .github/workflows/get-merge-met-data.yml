@@ -2,7 +2,6 @@ name: Get and Merge met data
 
 on:
   schedule:
-    branch: main
     - cron: "* * 1 * *"
     
   workflow_dispatch:
