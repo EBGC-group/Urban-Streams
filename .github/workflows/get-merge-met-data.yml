@@ -29,16 +29,16 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           cache: 'always'
-          # packages: |
-          #   here,
-          #   remotes,
-          #   magrittr,
-          #   dplyr,
-          #   tidyr,
-          #   readr
-          #   
-          # extra-packages: |
-          #   github::openair-project/worldmet
+          packages: |
+            any::here,
+            any::remotes,
+            any::magrittr,
+            any::dplyr,
+            any::tidyr,
+            any::readr
+
+          extra-packages: |
+            github::openair-project/worldmet
         #   extra-packages: |
         #     any::here
         #     any::remotes
