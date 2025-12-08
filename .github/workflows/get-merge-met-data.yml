@@ -12,11 +12,6 @@ permissions:
   pages: write
   id-token: write
   
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 jobs:
   get-merge-met-data:
     runs-on: ${{matrix.config.os}}
@@ -32,6 +27,7 @@ jobs:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       RSPM: ${{matrix.config.rspm}}
       GITHUB_PAT: ${{secrets.GITHUB_TOKEN}}
+      
       steps: 
       - name: Checkout
         uses: actions/checkout@v6
@@ -48,10 +44,12 @@ jobs:
           
       - name: Install R packages from CRAN
           run: |
-            Rscript -e 'install.packages("remotes", repos = "https://cran.rstudio.com")'
-            Rscript -e 'install.packages("magrittr", repos = "https://cran.rstudio.com")'
-            Rscript -e 'install.packages("dplyr", repos = "https://cran.rstudio.com")'
-            Rscript -e 'install.packages("tidyr", repos = "https://cran.rstudio.com")'
+            install.packages("remotes", repos = "https://cran.rstudio.com")
+            install.packages("magrittr", repos = "https://cran.rstudio.com")
+            install.packages("dplyr", repos = "https://cran.rstudio.com")
+            install.packages("tidyr", repos = "https://cran.rstudio.com")
+            
+          shell: Rscript {0}
             
             
       - name: Install R package from GitHub
@@ -62,6 +60,7 @@ jobs:
         run: |
           source("code/get-merge-met-data.R")
         shell: Rscript {0}
+      
       - name: Commit files
         run: |
           git config --local user.email "actions@github.com"
@@ -70,4 +69,3 @@ jobs:
           git commit -am "add updated met data"
           git push
   
-    
