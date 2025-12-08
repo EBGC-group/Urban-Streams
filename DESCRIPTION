@@ -1,5 +1,4 @@
 Depends:
-  R (>= 4.3.0)
 Imports:
   here,
   magrittr,
