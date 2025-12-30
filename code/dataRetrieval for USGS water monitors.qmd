@@ -1,0 +1,64 @@
+---
+title: "dataRetrieval fpr USGS stream data"
+subtitle: ""
+author: "Mya Hardee"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+format:
+  html:
+    self-contained: true
+    toc: true
+    toc-location: left
+    number-sections: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+This script explains the use of dataretrival package to retrieve USGS stream data from the GAGES II dataset. This dataset was used in the 2025 Araki et al. paper.
+
+```{r}
+install.packages("dataRetrieval")
+library(dataRetrieval)
+```
+
+Here is the link with information on using the package: https://doi-usgs.github.io/dataRetrieval/
+
+
+##Here, I will pull dicrete data from the hickory creek BasinID, located in the basinID file: https://www.sciencebase.gov/catalog/item/59692a64e4b0d1f9f05fbd39
+
+#This is specifically pH data.
+
+```{r}
+hickory_discdata_ph <- read_waterdata_samples(
+  monitoringLocationIdentifier = "USGS-08052780",
+  characteristicUserSupplied = "pH, water, unfiltered, field",
+  activityStartDateUpper = "2000-01-01",
+  dataProfile = "narrow")
+
+  ## bounding box function (if used) must be: west, south, east, north
+```
+
+To find codes for other variables for characteristics: https://waterdata.usgs.gov/code-dictionary/
+
+##OTHER TYPES OF DATA TO PULL
+
+Other than discrete data, you can pull other types of data from the monitors using different code.
+
+The example below is pulled from the instructional page for USGS daily data. The parameter code indicates discharge in ft cubed/s
+
+```{r}
+site <- "USGS-02238500"
+pcode <- "00060"
+dv_data_sf <- read_waterdata_daily(monitoring_location_id = site,
+                              parameter_code = "00060", 
+                              time = c("2021-01-01", "2022-01-01"))
+```
+#Here is one for hickory
+
+```{r}
+dv_data_sf <- read_waterdata_daily(monitoring_location_id = "USGS-08052780",
+                              parameter_code = "00060", 
+                              time = c("2021-01-01", "2022-01-01"))
+
+```
+
+## Overall, this can be a good source for pulling this data from this pre-existing monitor. 
