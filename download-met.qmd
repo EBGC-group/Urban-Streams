@@ -103,4 +103,4 @@ After this original file is written the file is updated automatically every mont
 
 Therefore, this process does not have to be repeated for the Denton Municipal Airport unless we need to change the variables. If other stations are desired, repeat this initiation process for new stations and update `get-merge-met-data.R` to include new station data.
 
-The last time the data was downloaded was `{r} readRDS(here::here("data/met_DMA_timestamp.rds"))`.
+The last time the data was downloaded was `r readRDS(here::here("data/met_DMA_timestamp.rds")`.
