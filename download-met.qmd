@@ -21,20 +21,22 @@ First make sure the `worldmet` package is installed from github. To do so we wil
 if(!require(devtools)){
   install.packages('devtools')
 }
+if(!require(worldmet)){
 devtools::install_github('openair-project/worldmet')
-
+}
 ```
 
-```{r load-packages, echo=FALSE, warning=FALSE}
+```{r load-packages, echo=FALSE, warning=FALSE, message=FALSE}
 library(here)
 here::i_am('download-met.qmd')
 library(magrittr)
 library(dplyr)
 library(tidyr)
+library(readr)
 library(worldmet)
 ```
 
-Make sure to load the package with `r library(worldmet)`.
+Make sure to load the package with  `library(worldmet)`.
 
 The Denton airport is ID: USW00003991
 
@@ -42,7 +44,7 @@ To get the hourly meteorological data, we can use the `import_ghcn_hourly()` fun
 
 ```{r import-downloaded-met, echo=FALSE, eval=TRUE}
 # we will download the current file so we don't have to pull from API every time
-met_DMA = read_csv(here::here("data/met_DMA.csv"), header = TRUE)
+met_DMA = read_csv(here::here("data/met_DMA.csv"))
 ```
 
 ```{r station-metadata, echo=TRUE,eval=FALSE}
@@ -65,7 +67,7 @@ This has a lot of information, most of which is unnecessary for our needs. We ca
 
 2)  only include the relevant columns
 
-To only download the current year (the function operates on data years currently), we just create a year variable to pass to the function with 'current_year = format(Sys.Date(), "%Y%")' = `r current_year = format(Sys.Date(), "%Y%")`. Then we subset the data columns to only include relevant information:
+To only download the current year (the function operates on data years currently), we just create a year variable to pass to the function with 'current_year = format(Sys.Date(), "%Y")' = `{r} format(Sys.Date(), "%Y")`. Then we subset the data columns to only include relevant information:
 
 -   'station_id': The station ID of the met station
 
@@ -81,7 +83,7 @@ To only download the current year (the function operates on data years currently
 
 -   'altimeter': Pressure reduced to mean sea level using standard atmosphere profile (hPa)
 
--   'precip': Total liquire precipitation (rain or melted snow) for the hour in mm
+-   'precip': Total liquid precipitation (rain or melted snow) for the hour in mm
 
 ```{r subset-met-columns, echo = TRUE}
 met_DMA = met_DMA %>% 
@@ -89,14 +91,16 @@ met_DMA = met_DMA %>%
 
 ```
 
-We then save this as a text file in the '/data' folder.
+We then save this as a csv file in the '/data' folder.
 
 ```{r save-met, echo=TRUE, eval=FALSE}
-write.csv(met_DMA, file = here::here("data/met_DMA.csv"), row.names = FALSE, quote = FALSE)
+write_csv(met_DMA, file = here::here("data/met_DMA.csv"),
+          quote = "none",
+          append = TRUE)
 ```
 
-After this original file is written the file is updated automatically every month through a github action: `get-merge-met-data.yml`. This action calls the script, `get-merge-met-data.R` to download new data and merge it into the met_DMA.txt file.
+After this original file is written the file is updated automatically every month through a github action: `get-merge-met-data.yml`. This action calls the script, `get-merge-met-data.R` to download new data and merge it into the met_DMA.csv file.
 
 Therefore, this process does not have to be repeated for the Denton Municipal Airport unless we need to change the variables. If other stations are desired, repeat this initiation process for new stations and update `get-merge-met-data.R` to include new station data.
 
-The last time the data was downloaded was `r readRDS(here::here("data/met_DMA_timestamp.rds")`.
+The last time the data was downloaded was `{r} readRDS(here::here("data/met_DMA_timestamp.rds"))`.

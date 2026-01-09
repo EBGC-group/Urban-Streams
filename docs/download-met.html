@@ -175,7 +175,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>During the process of analyzing certain logger data streams we will need meteorological data such as barometeric pressure, rainfall, air temperature, etc. This is particularly useful to converting pressure transducer readings to stream depth or for calculating the saturation point of dissolved gases such as oxygen.</p>
+<p>During the process of analyzing certain logger data streams we will need meteorological data such as barometric pressure, rainfall, air temperature, etc. This is particularly useful to converting pressure transducer readings to stream depth or for calculating the saturation point of dissolved gases such as oxygen.</p>
 <p>Generally this is acquired one of two ways:</p>
 <ol type="1">
 <li><p>Through co-located in-stream and out-of-stream pressure transducers</p></li>
@@ -188,50 +188,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(devtools)){</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">'devtools'</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">'openair-project/worldmet'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(worldmet)){</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">'openair-project/worldmet'</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>here() starts at C:/Users/jj0895/Documents/Projects/UNT_projects/Urban-Streams</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>here() starts at C:/Users/jj0895/Documents/Projects/UNT_projects/Urban-Streams</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'dplyr'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:stats':
-
-    filter, lag</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:base':
-
-    intersect, setdiff, setequal, union</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'tidyr'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:magrittr':
-
-    extract</code></pre>
-</div>
-</div>
-<p>Make sure to load the package with .</p>
+<p>Make sure to load the package with <code>library(worldmet)</code>.</p>
 <p>The Denton airport is ID: USW00003991</p>
 <p>To get the hourly meteorological data, we can use the <code>import_ghcn_hourly()</code> function. The function downloads the entire year data for the station.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>met_DMA <span class="ot">=</span> <span class="fu">import_ghcn_hourly</span>(<span class="at">station =</span> <span class="st">"USW00003991"</span>,</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                             <span class="at">year =</span> <span class="dv">2025</span>,</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">extra =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># station: string, station_id</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># year: numeric, year to download data</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># extra: logical, should extra columns be included?</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 7776 Columns: 8
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (2): station_id, station_name
+dbl  (5): air_temp, atmos_pres, sea_pres, altimeter, precip
+dttm (1): date
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>met_DMA <span class="ot">=</span> <span class="fu">import_ghcn_hourly</span>(<span class="at">station =</span> <span class="st">"USW00003991"</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                             <span class="at">year =</span> <span class="dv">2025</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">extra =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># station: string, station_id</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># year: numeric, year to download data</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># extra: logical, should extra columns be included?</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -239,7 +223,7 @@ Attaching package: 'tidyr'</code></pre>
 Columns: 8
 $ station_id   &lt;chr&gt; "USW00003991", "USW00003991", "USW00003991", "USW00003991…
 $ station_name &lt;chr&gt; "DENTON MUNICPAL AP", "DENTON MUNICPAL AP", "DENTON MUNIC…
-$ date         &lt;chr&gt; "2025-01-01", "2025-01-01 01:00:00", "2025-01-01 02:00:00…
+$ date         &lt;dttm&gt; 2025-01-01 00:00:00, 2025-01-01 01:00:00, 2025-01-01 02:…
 $ air_temp     &lt;dbl&gt; 7.8, 3.9, 5.0, 3.3, 3.3, 3.9, 3.3, 2.2, 3.9, 1.7, 2.2, 0.…
 $ atmos_pres   &lt;dbl&gt; 997.5, 998.2, 998.5, 999.5, 1000.5, 1000.8, 1001.5, 1002.…
 $ sea_pres     &lt;dbl&gt; 1021.0, 1021.7, 1022.0, 1023.2, 1024.0, 1024.3, 1024.8, 1…
@@ -252,7 +236,7 @@ $ precip       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 <li><p>only include the relevant date range, and</p></li>
 <li><p>only include the relevant columns</p></li>
 </ol>
-<p>To only download the current year (the function operates on data years currently), we just create a year variable to pass to the function with ‘current_year = format(Sys.Date(), “%Y%”)’ = . Then we subset the data columns to only include relevant information:</p>
+<p>To only download the current year (the function operates on data years currently), we just create a year variable to pass to the function with ‘current_year = format(Sys.Date(), “%Y”)’ = 2025. Then we subset the data columns to only include relevant information:</p>
 <ul>
 <li><p>‘station_id’: The station ID of the met station</p></li>
 <li><p>‘station_name’: The name of the met station</p></li>
@@ -261,19 +245,21 @@ $ precip       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 <li><p>‘atmos_pres’: barometric pressure in units of hPa</p></li>
 <li><p>‘sea_press’: Estimated pressure at sea level directly below the station using actual atomosphere profile (hPa)</p></li>
 <li><p>‘altimeter’: Pressure reduced to mean sea level using standard atmosphere profile (hPa)</p></li>
-<li><p>‘precip’: Total liquire precipitation (rain or melted snow) for the hour in mm</p></li>
+<li><p>‘precip’: Total liquid precipitation (rain or melted snow) for the hour in mm</p></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>met_DMA <span class="ot">=</span> met_DMA <span class="sc">%&gt;%</span> </span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(station_id, station_name, date, air_temp, atmos_pres, sea_pres, altimeter, precip)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>met_DMA <span class="ot">=</span> met_DMA <span class="sc">%&gt;%</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(station_id, station_name, date, air_temp, atmos_pres, sea_pres, altimeter, precip)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We then save this as a text file in the ‘/data’ folder.</p>
+<p>We then save this as a csv file in the ‘/data’ folder.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write.table</span>(met_DMA, <span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data/met_DMA.txt"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>, <span class="at">quote =</span> <span class="cn">FALSE</span>, <span class="at">sep =</span> <span class="st">'</span><span class="sc">\t</span><span class="st">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(met_DMA, <span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data/met_DMA.csv"</span>),</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">quote =</span> <span class="st">"none"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">append =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>After this original file is written the file is updated automatically every month through a github action: <code>get-merge-met-data.yml</code>. This action calls the script, <code>get-merge-met-data.R</code> to dowload new data and merge it into the met_DMA.txt file.</p>
+<p>After this original file is written the file is updated automatically every month through a github action: <code>get-merge-met-data.yml</code>. This action calls the script, <code>get-merge-met-data.R</code> to download new data and merge it into the met_DMA.csv file.</p>
 <p>Therefore, this process does not have to be repeated for the Denton Municipal Airport unless we need to change the variables. If other stations are desired, repeat this initiation process for new stations and update <code>get-merge-met-data.R</code> to include new station data.</p>
-<p>The last time the</p>
+<p>The last time the data was downloaded was 2025-12-08 00:00:00.</p>
 
 
 

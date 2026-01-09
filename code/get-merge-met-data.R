@@ -37,7 +37,7 @@ write_csv(updated_met_DMA,
 
 # create a timestamp of last successful run
 
-saveRDS(format(Sys.Date(), "%Y-%m-%d %H:%M:%S"), here::here("data/met_DMA_timestamp.rds"))
+saveRDS(format(Sys.Date(), "%Y-%m-%d"), here::here("data/met_DMA_timestamp.rds"))
 
 
 
