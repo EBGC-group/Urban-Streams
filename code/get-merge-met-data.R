@@ -13,7 +13,8 @@ library(worldmet)
 '%ni%' <- Negate('%in%')
 
 # determine what the current year is to ensure we download the minimal amount of data given the constraints of the functions 
-current_year = format(Sys.Date(), "%Y")
+# current_year = format(Sys.Date(), "%Y")
+current_year = "2026"
 
 # load the current data file in /data folder
 
