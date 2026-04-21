@@ -7,5 +7,5 @@
 
 <!-- badges: end -->
 
-This project organizes the workflow for project related to Urban Streams
+This project organizes the workflow for projects related to Urban Streams
 within the EBGC group at UNT.
