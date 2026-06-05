@@ -1,0 +1,290 @@
+---
+title: "hydroEvents"
+format: html
+editor: visual
+---
+
+Hydroevents package for analyzing hydrographs. Can be used to determine when storm events occur and how they are paired with hydrographs of streamflow. This is for event scale analyses.
+
+THIS SCRIPT GOES THROUGH ALL STEPS you can use in analysis, but we don't really need event pairing (last step) according to Dr. Junker
+
+```{r}
+library(hydroEvents)
+
+
+??hydroEvents
+
+
+si<-sessionInfo()
+library(report)
+report(si)
+
+```
+
+## how the functions work:
+
+This paper, by Wasko and Guo, the creators of this package, walks through what the functions are and has an example with data
+
+https://onlinelibrary.wiley.com/doi/10.1002/hyp.14563
+
+In particular, see this flow diagram detailing what functions to use for each step of analysis:
+
+https://onlinelibrary.wiley.com/cms/asset/03d47daa-dd9a-4344-80d8-dff598aa5d2d/hyp14563-fig-0002-m.jpg
+
+## Practice Data
+
+The following data is taken from the USGS monitoring station at Hickory.
+
+For the real data in this study, our discharge is determined from depth and corrected with pressure data (see seperate R file about this).
+
+```{r}
+library(dplyr)
+library(easystats)
+library(readr)
+library(tidyr)
+hickoryexample<-read_csv(file="https://raw.githubusercontent.com/MKhardee/Hickory_example_discharge_data/refs/heads/main/hickory_example_data_file.csv")
+hickoryexample
+```
+
+Now, lets try some of the functions
+
+# Baseflow extraction
+
+"The majority of literature recommend for daily streamflow a baseflow filter parameter (α) of 0.925 with three passes" (Wasko and Guo 2022)
+
+The result of the baseflow functions are values representing the baseflow (total flow minus quickflow), thus, it extracts baseflow
+
+```{r}
+
+??baseflowA()
+??baseflowB()
+
+# see section about baseflow seperation on Wasko and Guo to understand the difference in functions. They are pretty much the same 
+
+# extract vector of flow
+
+flow <- hickoryexample |> 
+  dplyr::select(value) |> 
+  drop_na() |> 
+  unlist()  
+#must use unlist function to get into proper vector form
+
+flow
+
+baseflowA(flow, alpha=0.925, passes=3)
+
+```
+
+```{r}
+
+# lets look: is there really a difference if we use baseflowB 
+flow
+
+bfb<-baseflowB(flow, alpha=0.0925, passes=3)
+bfb
+```
+
+## It appears there is. Which one do we use?
+
+# Event Identification
+
+The paper mentions that events are identified either before or afeter baseflow separation. There are several methods for identifying events. It is not entirely obvious which methods require the extraction before the event identification. I will be using the Peaks over threshold identification method, which does not inherently rely on baseflow it seems. It states that "only data above a certain value (threshold) are considered events, with events spaced by a minimum number of time steps (min.diff)." The threshold is based on total flow.
+
+HOWEVER, when viewing examples of eventPOT() use (see code chunk) it includes data after extraction - bf = baseflowB(dataBassRiver, alpha = 0.925) qf = dataBassRiver - bf\$bf events = eventPOT(qf)
+
+So, I will do that
+
+"For daily rainfall, studies have generally used a threshold of 1mm and 1 day of zero rainfall (Wasko and Nathan, 2019 as cited in Wasko and Guo 2022)." This may not be used in our study, but just for example purposes
+
+```{r fig.width=10, fig.height=10}
+??eventPOT()
+# our data is in feet, meaning if we want to use the 1mm threshold, we need to convert to feet: 0.003
+# our data is recorded every 15 minutes. I assume we are entering into the code in terms of time steps, so if we want to put the min.diff as a day, we need 96
+
+# setting up for the function
+
+qf_ex1<-flow-bfb$bf
+qf_ex1
+
+# getting events
+
+events_flow<-eventPOT(qf_ex1)
+events_flow
+
+# plot
+?plotEvents()
+plotEvents(qf_ex1, dates = NULL, events = events_flow, type = "lineover",
+   main = "Events (plotted on quickflow)")
+```
+
+Doing the math, x axis is time steps, because 35000 time steps spaced 15 minutes apart gets you 365 days of data. numbers on the peaks are the event indexes, according to paper.
+
+# Event Pairing
+
+Now, lets look at event pairing
+
+```{r}
+??pairEvents
+```
+
+So, it seems to do this, I need to get a data set of precipitation events in the same time span as the data set of stream flow.
+
+There is a rainfall monitor at Lake Lewisville, and other nearby areas, here is where that can be found https://dashboard.waterdata.usgs.gov/app/nwd/en/
+
+```{r}
+precip<-read_csv(file="https://raw.githubusercontent.com/MKhardee/Hickory_example_discharge_data/refs/heads/main/lewisville_lake_precip.csv") |> select(!c(x,y,statistic_id, qualifier))
+precip
+```
+
+Ok, now we can extract the rainfall data as a vector
+
+```{r}
+
+rf <- precip |> 
+  dplyr::select(value) |> 
+  drop_na() |> 
+  unlist()  
+rf
+```
+
+We need to give a maximum lag time, which is based off of time of concentration ( a hydrology concept). Based upon this study linked below, we have a large catchment, so we will use the rough estimate from this study for this practice (so we will say 12 hours).
+
+Again, I am assuming that it is asking for a number of time steps. luckily, our monitor is also using 15 minute intervals. so that means we can set 48 steps.
+
+https://www.mdpi.com/1999-4907/15/1/186
+
+There are 5 different pairing methods in this function. For this example, I will just use one
+
+## confusion: should there be an event identification done for the precipitation data (like for the stream flow data), or is any precipitation amount already an event (I would assume any precipitation amount is an event, as in, we shouldnt be looking for a threshold to identify precipitation at)
+
+answer: the example ran in the paper explains that their example: Rainfall events are identified using eventPOT() using a threshold = 1 (mm) and min.diff = 1
+
+for this example, I will do the same.
+
+Event identifying for precipitation
+
+```{r}
+##convert mm to inch : 0.04
+event_rf<-eventPOT(rf, threshold = 0.04, min.diff = 1)
+
+
+```
+
+Now we can pair
+
+The type of pairing I am doing is 1 for this example. We search for a peak in discharge within the start of rain to the end of rain+lag. so essentially we expect to see the peak in discharge 12 hours or less after the end of associated rain
+
+```{r}
+paired_events_t_1<-pairEvents(event_rf, events_flow, lag=48, type=1)
+paired_events_t_1
+
+```
+
+```{r fig.length=15}
+?plotPairs
+d=as.Date("2025-05-23")+0:(length(rf)-1)
+
+#plotPairs(qf_ex1, rf, paired_events_t_1, dates=d, type="hyet", xlab = "Date",
+    #ylab.1 = "Rain (mm)", ylab.2 = "Flow (ML/day)", main = "Matching Forward")
+
+# I assume the data vectors are the data before events are identified. However, when i tried that (above), it didnt work becuase the legnth of the vectors are different. let me see why
+
+#Could I just plot the paired events for now? The pairing worked, so I am less concerned about an error popping up just for the plotting 
+
+#plotPairs(paired_events_t_1, dates=d, type="hyet", xlab = "Date",
+    #ylab.1 = "Rain (mm)", ylab.2 = "Flow (ML/day)", main = "Matching Forward")
+
+# No, not an option. 
+
+# So, lets make everything into a temporary data frame for plotting. We will do this by performing a join that forces our data to be the same length based upon the time values that the data sets have in common 
+
+aligned_data <- precip |> 
+  left_join(hickoryexample, by = "time")
+
+aligned_data
+# evidently, then, one of our data sets did not have a whole year's worth of data
+
+d_sync   <- aligned_data$time
+rf_sync  <- aligned_data$value.x   # rain data
+qf_sync  <- aligned_data$value.y  #flow data
+
+
+#plot:
+  
+  plotPairs(
+  data.1 = qf_sync[1:600], 
+  data.2 = rf_sync[1:600], 
+  events = paired_events_t_1, 
+  dates  = d_sync[1:600], 
+  type   = "hyet", 
+  xlab   = "Date",
+  ylab.1 = "Rain (mm)", 
+  ylab.2 = "Flow (ML/day)", 
+  main   = "Matching Forward"
+)
+  # plotting the data in parts since there is so much data. I will do several graphs until i get through all the data
+  
+   plotPairs(
+  data.1 = qf_sync[601:1201], 
+  data.2 = rf_sync[601:1201], 
+  events = paired_events_t_1, 
+  dates  = d_sync[601:1201], 
+  type   = "hyet", 
+  xlab   = "Date",
+  ylab.1 = "Rain (mm)", 
+  ylab.2 = "Flow (ML/day)", 
+  main   = "Matching Forward"
+)
+   
+   
+   
+plotPairs(
+  data.1 = qf_sync, 
+  data.2 = rf_sync, 
+  events = paired_events_t_1, 
+  dates  = d_sync, 
+  type   = "hyet", 
+  xlab   = "Date",
+  ylab.1 = "flow (in)", 
+  ylab.2 = "rain (in/day)", 
+  main   = "Matching Forward"
+)
+   
+```
+
+there is SO much data since there is so many observations.I can try to get graphs covering only the time periods for the months of interest I will estimate and see
+
+```{r fig.width=10, fig.height=10}
+aligned_data
+plotPairs(
+  data.1 = qf_sync[17500:15500], 
+  data.2 = rf_sync[17500:15500], 
+  events = paired_events_t_1, 
+  dates  = d_sync[17500:15500], 
+  type   = "hyet", 
+  xlab   = "Date",
+  ylab.1 = "flow (in)", 
+  ylab.2 = "rain (in/day)", 
+  main   = "Matching Forward")
+```
+
+Still a lot going on.
+
+```{r fig.height=15, fig.width=20}
+?plotPairs
+
+plotPairs(
+  data.1 = qf_sync, 
+  data.2 = rf_sync, 
+  events = paired_events_t_1, 
+  dates  = d_sync, 
+  type   = "lineover",   # different type
+  xlab   = "Date",
+  ylab.1 = "flow above baseflow (in)", #also updating label to be more accurate 
+  ylab.2 = "rain (in/day)", 
+  main   = "Matching Forward"
+)
+
+```
+
+MUCH better
