@@ -17,14 +17,16 @@ current_year = format(Sys.Date(), "%Y")
 
 # load the current data file in /data folder
 
-current_met_DMA = read_csv(here::here("data/met_DMA.csv"))
+current_met_DMA = read_csv(here::here("data/met_DMA.csv")) %>% 
+  dplyr::filter(!if_all(c(air_temp:precip), is.na))
 
 # download the updated meteorological data and subset columns
 
 new_met_DMA = import_ghcn_hourly(station = "USW00003991",
                              year = current_year,
                              extra = TRUE) %>% 
-  dplyr::select(station_id, station_name, date, air_temp, atmos_pres, sea_pres, altimeter, precip)
+  dplyr::select(station_id, station_name, date, air_temp, atmos_pres, sea_pres, altimeter, precip) %>% 
+  dplyr::filter(!if_all(c(air_temp:precip), is.na))
 
 # merge the old and new data sets. Identify new date-times and append them to the old file
 
