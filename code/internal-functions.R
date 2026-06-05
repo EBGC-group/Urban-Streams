@@ -1,10 +1,32 @@
 #'
-#'
+#' read_clean_DO_files
+#' @description
+#' This function cleans and reads in data files from PME miniDOts. First it removes metadata
+#' from the top of the file and then extracts header columns columns for column names, and finally
+#' collects the data and sets the column names for the file. 
+#' In the future, this could be modified to read and bind multiple files.
+#' @param filepath a single file path to data file location
 #'
 #'
 read_clean_DO_files = function(filepath = NULL,...){
+  # read in the column header row and remove whitespace
+  xHead = read.table(filepath, skip = 7, header = FALSE, sep = ",", nrows=1) %>% unlist %>% trimws()
+  # read in the units, remove whitespace, and punctuation
+  xUnits = read.table(filepath, skip = 8, header= FALSE, sep = ",", nrows = 1) %>% unlist %>% trimws() %>%  gsub("[[:punct:]]", "",.)
+  # read in the data columns
+  xData = read.table(filepath, skip = 9, header = FALSE, sep = ",")
   
+  #combine header and units
+  xHeaderFull = paste(xHead,xUnits, sep = "_")
   
+  # set the column names for the data
+  names(xData) = xHeaderFull
+  
+  # optional: clean names
+  xData= janitor::clean_names(xData)
+  
+  #return the data object
+  return(xData)
 }
 
 
