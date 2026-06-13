@@ -46,6 +46,88 @@ read_clean_cond_files = function(filepath = NULL){
   
 }
 
+## What we need to do next (so that the estimate DO sat can be run)
+  # get the temperature data and the pressure data lined up with the DO data. (time intervals)
+
+# Reading in the met_DMA file
+
+library(readr)
+library(dplyr)
+mettest<-read_csv(file="https://raw.githubusercontent.com/EBGC-group/Urban-Streams/refs/heads/main/data/met_DMA.csv")
+
+#It is hourly. We can thus interpolate between the hours to get ten minute interval estimates 
+
+#HOWEVER, we also know that we are missing some of the hourly measurements that should be there. At some point, the sensor stopped taking atmospheric measurements. But, we previously determined
+#that there is a linear relationship (corr) between atmospheric pressure and sea pressure. Basically, it is the simple 1:1 relationship but shifted a bit (we are not at sea level)
+
+mettest[1:100,] |> select(atmos_pres, sea_pres) |>plot()
+
+#So, we just need to get a line fit through this data and then we can use that to predict the values we have missing 
+
+library(lme4)
+pres_model<-lm(atmos_pres~sea_pres, data=mettest)
+
+summary(pres_model)
+
+library(ggplot2)
+
+# Format: ggplot(data, aes(x = independent_variable, y = dependent_variable))
+ggplot(mettest, aes(x = sea_pres, y =atmos_pres)) +
+  geom_point() +                          # Adds the data points
+  geom_smooth(method = "lm", se = TRUE)   # Adds the slope line (se = TRUE adds confidence intervals)
+
+
+
+#NOW: need to code so that I can have all the NA in the pres column filled with the predicted values here 
+
+#THEN...
+
+# Interpolating:
+
+mettest |> select(atmos_pres,date) |>plot()
+mettest_filter<-mettest[1:24,]
+mettest_filter |> select(atmos_pres, date) |> plot()
+mettest_filter_2 <-mettest[49:72,]
+mettest_filter_2 |>select(atmos_pres, date) |>plot()
+
+# Looks like it wont be linear, but if we want to use linear the functions would be: 
+
+?approx() # or 
+?approxfun()
+
+#Becuase it seems nonlinear in pattern, spline interpolation can give us the flexibility we need 
+?spline()
+?splinefun()
+
+# test it out:
+
+vector_atmos_pres<-mettest |>select(atmos_pres) |> as.vector()
+atmos_double_unlist<-unlist(vector_atmos_pres) |> as.double()
+vector_date<-mettest |> select (date) |> as.vector()
+date_double_unlist<-unlist(vector_date) |> as.double()
+
+# splinefun
+sf1<-splinefun(date_double_unlist, atmos_double_unlist, method="natural")
+sf1
+
+#splinefun returns a function which will perform cubic spline interpolation of the given data points
+##However, it does not let me specify the intervals at which I want data points interpolated
+
+
+# spline
+
+s1<-spline(date_double_unlist, atmos_double_unlist, method="natural", n=5*length(date_double_unlist)-5, xmin = min(date_double_unlist), xmax=(max(date_double_unlist)))
+s1
+#spline just returns the list of the interpolated values. We can mesh this with the table of DO values later.  n= 5*length(date_double_unlist)-5 becuase 
+#we want 5 equally spaced intervals for interpolation between each existing time that we already have.
+
+
+plot(s1) # unsure why it is giving negative values for some of the pressures...
+mettest |> select(date, atmos_pres) |>plot()  
+
+ 
+
+
 #' @title estimate_DO_sat
 #' @description
 #' This function calculates the dissolved oxygen saturation point with a correction for 
