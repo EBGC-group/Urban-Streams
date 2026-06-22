@@ -1,3 +1,6 @@
+
+library(magrittr)
+library(janitor)
 #'
 #' read_clean_DO_files
 #' @description
@@ -10,9 +13,9 @@
 #'
 read_clean_DO_files = function(filepath = NULL,...){
   # read in the column header row and remove whitespace
-  xHead = read.table(filepath, skip = 7, header = FALSE, sep = ",", nrows=1) %>% unlist %>% trimws()
+  xHead = read.table(filepath, skip = 7, header = FALSE, sep = ",", nrows=1) %>% unlist() %>% trimws()
   # read in the units, remove whitespace, and punctuation
-  xUnits = read.table(filepath, skip = 8, header= FALSE, sep = ",", nrows = 1) %>% unlist %>% trimws() %>%  gsub("[[:punct:]]", "",.)
+  xUnits = read.table(filepath, skip = 8, header= FALSE, sep = ",", nrows = 1) %>% unlist() %>% trimws() %>%  gsub("[[:punct:]]", "",.)
   # read in the data columns
   xData = read.table(filepath, skip = 9, header = FALSE, sep = ",")
   
@@ -46,6 +49,25 @@ read_clean_cond_files = function(filepath = NULL){
   
 }
 
+# Practice with this function
+
+
+
+
+# 1. Define the GitHub URL
+github_url <- "https://raw.githubusercontent.com/EBGC-group/Urban-Streams/refs/heads/main/data/2026-03-16_South%20Hickory%20DO.TXT"
+
+# 2. Create a local name for the file inside your working directory
+local_filename <- "2026-03-16_South_Hickory_DO.txt"
+
+# 3. Securely download the online text file to your local computer
+download.file(url = github_url, destfile = local_filename, mode = "wb")
+
+# 4. Pass the brand new local file straight to your function
+clean_data <- read_clean_DO_files(filepath = local_filename)
+
+read_clean_DO_files("https://raw.githubusercontent.com/EBGC-group/Urban-Streams/refs/heads/main/data/2026-03-16_South%20Hickory%20DO.TXT")
+
 ## What we need to do next (so that the estimate DO sat can be run)
   # get the temperature data and the pressure data lined up with the DO data. (time intervals)
 
@@ -65,7 +87,8 @@ mettest[1:100,] |> select(atmos_pres, sea_pres) |>plot()
 #So, we just need to get a line fit through this data and then we can use that to predict the values we have missing 
 
 library(lme4)
-pres_model<-lm(atmos_pres~sea_pres, data=mettest)
+pres_model<-lm(atmos_pres~sea_pres, data=mettest, na.action.na.exclude)
+
 
 summary(pres_model)
 
@@ -79,6 +102,19 @@ ggplot(mettest, aes(x = sea_pres, y =atmos_pres)) +
 
 
 #NOW: need to code so that I can have all the NA in the pres column filled with the predicted values here 
+
+
+
+predicted_values_atmos <- predict(pres_model, newdata = mettest)
+# generating predicted values for all atmos pressure values, using the model
+
+mettest$predicted_atmos <- ifelse(is.na(mettest$atmos_pres), predicted_values_atmos, mettest$atmos_pres)
+# making a new column, replacing NA values from original atmos pressure with new predicted values
+
+
+# Why it works: ifelse() automatically matches the row indices. If row 5 of atmos_pres is missing, it will seamlessly grab row 5 of pres_model$fitted.values.
+
+
 
 #THEN...
 
@@ -116,8 +152,8 @@ sf1
 
 # spline
 
-s1<-spline(date_double_unlist, atmos_double_unlist, method="natural", n=5*length(date_double_unlist)-5, xmin = min(date_double_unlist), xmax=(max(date_double_unlist)))
-s1
+s1_atmos_p_hourly<-spline(date_double_unlist, atmos_double_unlist, method="natural", n=5*length(date_double_unlist)-5, xmin = min(date_double_unlist), xmax=(max(date_double_unlist)))
+s1_atmos_p_hourly
 #spline just returns the list of the interpolated values. We can mesh this with the table of DO values later.  n= 5*length(date_double_unlist)-5 becuase 
 #we want 5 equally spaced intervals for interpolation between each existing time that we already have.
 
@@ -125,7 +161,44 @@ s1
 plot(s1) # unsure why it is giving negative values for some of the pressures...
 mettest |> select(date, atmos_pres) |>plot()  
 
+
+# Now, lets write a function that combines all changes to the met dma file 
  
+edit_atmos<-function(filepath = NULL,...){
+# Check if filepath is provided
+  if (is.null(filepath)) {
+    stop("Please provide a valid file path or URL.")
+  }
+  
+  # Read the data directly from the path/URL
+  # (Change read.csv to your preferred file reader like readLines or read.table)
+  met_dma <- read.csv(filepath, ...)
+  
+  # Perform your edits on the data here
+  # ...
+  
+  return(data)
+#read in file
+pres_model<-lm(atmos_pres~sea_pres, data=met_dma, na.action.na.exclude)
+#make model
+predicted_values_atmos <- predict(pres_model, newdata = met_dma)
+#get predict
+met_dma$predicted_atmos <- ifelse(is.na(met_dma$atmos_pres), predicted_values_atmos, met_dma$atmos_pres)
+#add column
+vector_atmos_pres<-met_dma |>select(atmos_pres) |> as.vector()
+atmos_double_unlist<-unlist(vector_atmos_pres) |> as.double()
+vector_date<-met_dma |> select (date) |> as.vector()
+date_double_unlist<-unlist(vector_date) |> as.double()
+#correctly format everything from the atmospheric pressure dataset
+s1_atmos_p_hourly<-spline(date_double_unlist, atmos_double_unlist, method="natural", n=5*length(date_double_unlist)-5, xmin = min(date_double_unlist), xmax=(max(date_double_unlist))) }
+## get the interpolation using spline 
+
+# Testing
+edit_atmos(filepath ="https://raw.githubusercontent.com/EBGC-group/Urban-Streams/refs/heads/main/data/met_DMA.csv")
+
+?read.csv
+
+  
 
 
 #' @title estimate_DO_sat
