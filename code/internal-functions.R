@@ -14,8 +14,8 @@ library(tidyr)
 library(purrr)
 library(readr)
 library(lubridate)
-
-
+library(here)
+here::i_am('code/internal-functions.R')
 
 #'
 #' read_clean_DO_files
@@ -176,7 +176,7 @@ mettest[1:100,] |> select(atmos_pres, sea_pres) |>plot()
 #So, we just need to get a line fit through this data and then we can use that to predict the values we have missing 
 
 library(lme4)
-pres_model<-lm(atmos_pres~sea_pres, data=mettest, na.action.na.exclude)
+pres_model<-lm(atmos_pres~sea_pres, data=mettest, na.action=na.exclude)
 
 
 summary(pres_model)
@@ -247,7 +247,7 @@ s1_atmos_p_hourly
 #we want 5 equally spaced intervals for interpolation between each existing time that we already have.
 
 
-plot(s1) # unsure why it is giving negative values for some of the pressures...
+plot(s1_atmos_p_hourly) # unsure why it is giving negative values for some of the pressures...
 mettest |> select(date, atmos_pres) |>plot()  
 
 
